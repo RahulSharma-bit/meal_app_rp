@@ -3,10 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meal_rp/screens/categories.dart';
 import 'package:meal_rp/screens/filters.dart';
 import 'package:meal_rp/screens/meals.dart';
-import 'package:meal_rp/models/meal.dart';
 import 'package:meal_rp/widgets/main_drawer.dart';
-// import 'package:meal_rp/data/dummy_data.dart';
 import 'package:meal_rp/providers/meals_provider.dart';
+import 'package:meal_rp/providers/favorites_provider.dart';
 
 const kIntialFilters = {
   Filter.glutenFree: false,
@@ -26,7 +25,6 @@ class TabsScreen extends ConsumerStatefulWidget {
 
 class _TabsScreenState extends ConsumerState<TabsScreen> {
   int activePageIndex = 0;
-  final List<Meal> _favoriteMeals = [];
   Map<Filter, bool> _selectedFilters = kIntialFilters;
 
   void _setScreen(String identifier) async {
@@ -45,26 +43,6 @@ class _TabsScreenState extends ConsumerState<TabsScreen> {
       // print(result);
     } else {
       Navigator.of(context).pop();
-    }
-  }
-
-  void _showInfoMessage(String message) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(duration: const Duration(seconds: 3), content: Text(message)));
-  }
-
-  void _toggleFavoriteMealStatus(Meal meal) {
-    if (_favoriteMeals.contains(meal)) {
-      setState(() {
-        _favoriteMeals.remove(meal);
-        _showInfoMessage("Meal Removed ");
-      });
-    } else {
-      setState(() {
-        _favoriteMeals.add(meal);
-        _showInfoMessage("Meal Added to the Favorite's ❤");
-      });
     }
   }
 
@@ -95,16 +73,13 @@ class _TabsScreenState extends ConsumerState<TabsScreen> {
 
     String activePageTitle = "Categories";
     Widget content = CategoriesScreen(
-      toggleFavoriteMealStatus: (meal) => _toggleFavoriteMealStatus(meal),
       availableMeals: availableMeals,
     );
 
     if (activePageIndex == 1) {
+      final favoriteMeals = ref.watch(favoriteMealsProvider);
       content = MealsScreen(
-        meals: _favoriteMeals,
-        toggleFavoriteMealStatus: (meal) {
-          _toggleFavoriteMealStatus(meal);
-        },
+        meals: favoriteMeals,
       );
       activePageTitle = "Favorite's";
     }
